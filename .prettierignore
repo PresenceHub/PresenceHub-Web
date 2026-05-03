@@ -1,0 +1,9 @@
+.cursor
+.next
+out
+build
+node_modules
+pnpm-lock.yaml
+.next/cache
+coverage
+*.tsbuildinfo
