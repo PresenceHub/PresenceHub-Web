@@ -13,7 +13,9 @@ services:
       - /app/node_modules
       - /app/.next
     working_dir: /app
-    command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && pnpm dev -H 0.0.0.0 -p 3000"
+    # Use `pnpm exec` / package script so -H/-p go to `next dev` (not `next dev -- -H …`).
+    # Webpack dev + WATCHPACK_POLLING is more reliable for HMR on Docker bind mounts than Turbopack.
+    command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && pnpm run dev:docker-webpack"
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost}
       CHOKIDAR_USEPOLLING: "true"
