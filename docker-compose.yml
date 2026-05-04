@@ -16,7 +16,7 @@ services:
     # Webpack dev + polling: Turbopack is the default in Next 16; a custom
     # webpack() block is enabled when CHOKIDAR/WATCHPACK polling is set, so we
     # must run `next dev --webpack` or Next exits with a config mismatch error.
-    command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && next dev --webpack --hostname 0.0.0.0 --port 3000"
+    command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && pnpm run dev:docker"
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://host.docker.internal}
       CHOKIDAR_USEPOLLING: "true"
