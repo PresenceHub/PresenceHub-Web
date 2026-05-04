@@ -57,7 +57,7 @@ describe("auth session + cookie persistence", () => {
     expect(setMock).toHaveBeenCalled();
     expect(cookieValues.get(AUTH_SESSION_COOKIE)).toBe("token-1");
     expect(cookieValues.get(AUTH_WORKSPACE_COOKIE)).toBe("ws-1");
-    expect(cookieValues.get(AUTH_USER_COOKIE)).toContain("\"uuid\":\"user-1\"");
+    expect(cookieValues.get(AUTH_USER_COOKIE)).toContain('"uuid":"user-1"');
   });
 
   it("clears all auth cookies", async () => {

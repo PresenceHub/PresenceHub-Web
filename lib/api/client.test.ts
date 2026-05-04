@@ -1,14 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  createMock,
-  getApiBaseUrlMock,
-  normalizeApiErrorBodyMock,
-} = vi.hoisted(() => ({
-  createMock: vi.fn(),
-  getApiBaseUrlMock: vi.fn(),
-  normalizeApiErrorBodyMock: vi.fn(),
-}));
+const { createMock, getApiBaseUrlMock, normalizeApiErrorBodyMock } = vi.hoisted(
+  () => ({
+    createMock: vi.fn(),
+    getApiBaseUrlMock: vi.fn(),
+    normalizeApiErrorBodyMock: vi.fn(),
+  }),
+);
 
 vi.mock("ky", () => ({
   default: {
@@ -121,7 +119,9 @@ describe("api client helpers", () => {
       statusText: "Unprocessable Entity",
       headers: { "content-type": "application/json" },
     });
-    expect(normalizedErrorFromResponse(jsonRes, { message: "x" }, "fallback")).toEqual({
+    expect(
+      normalizedErrorFromResponse(jsonRes, { message: "x" }, "fallback"),
+    ).toEqual({
       message: "Validation failed",
       fieldErrors: { email: ["Invalid"] },
     });
@@ -131,7 +131,9 @@ describe("api client helpers", () => {
       statusText: "Server Error",
       headers: { "content-type": "text/plain" },
     });
-    expect(normalizedErrorFromResponse(textRes, "failed text", "fallback")).toEqual({
+    expect(
+      normalizedErrorFromResponse(textRes, "failed text", "fallback"),
+    ).toEqual({
       message: "failed text",
     });
   });
