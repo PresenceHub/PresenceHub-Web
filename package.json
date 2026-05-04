@@ -7,7 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --max-warnings 0",
+    "lint:pretty": "eslint . --max-warnings 0 -f eslint-formatter-pretty",
+    "lint:github": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "setup-hooks": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "next": "16.2.4",
@@ -21,6 +27,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "eslint-formatter-pretty": "^5.0.0",
+    "prettier": "^3.6.2",
+    "shadcn": "^4.6.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
