@@ -20,7 +20,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["lib/utils.ts"],
+      include: ["lib/**/*.ts"],
       exclude: [
         "**/*.test.ts",
         "**/*.spec.ts",
