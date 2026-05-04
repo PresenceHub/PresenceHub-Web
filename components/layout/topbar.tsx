@@ -28,10 +28,13 @@ export function Topbar() {
     console.log("handleSignOut");
     startTransition(async () => {
       console.log("startTransition");
-      
+
       const result = await signOutAction();
       if (result.revokeFailed && result.revokeMessage) {
-        console.warn("[Sign out] Could not revoke token on server:", result.revokeMessage);
+        console.warn(
+          "[Sign out] Could not revoke token on server:",
+          result.revokeMessage,
+        );
       }
       router.push("/login");
       router.refresh();
@@ -42,7 +45,9 @@ export function Topbar() {
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-6">
       <SidebarTrigger />
       <div className="flex min-w-0 flex-1 items-center gap-4">
-        <h1 className="truncate text-lg font-semibold tracking-tight">{title}</h1>
+        <h1 className="truncate text-lg font-semibold tracking-tight">
+          {title}
+        </h1>
         <div className="hidden max-w-md flex-1 md:block">
           <Input
             type="search"

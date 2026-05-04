@@ -16,7 +16,7 @@ const sharedKyDefaults = {
 };
 
 function createPresenceHubApi(
-  extraHeaders?: Record<string, string>
+  extraHeaders?: Record<string, string>,
 ): KyInstance | null {
   const base = getApiBaseUrl();
   if (!base) return null;
@@ -52,7 +52,7 @@ const X_WORKSPACE_UUID = "X-Workspace-Uuid";
  */
 export function getPresenceHubApiWithBearer(
   token: string,
-  options?: PresenceHubBearerOptions
+  options?: PresenceHubBearerOptions,
 ): KyInstance | null {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ export async function apiPostJson(
   api: KyInstance,
   path: string,
   body: unknown,
-  options?: Omit<KyPostOptions, "json" | "body">
+  options?: Omit<KyPostOptions, "json" | "body">,
 ): Promise<{ res: Response; raw: unknown }> {
   try {
     const res = await api.post(path, {
@@ -103,7 +103,7 @@ export async function apiPostJson(
       {
         status: 503,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
     const raw = await readApiResponseBody(res);
     return { res, raw };
@@ -116,7 +116,7 @@ export async function apiPostJson(
 export function normalizedErrorFromResponse(
   res: Response,
   raw: unknown,
-  fallbackMessage: string
+  fallbackMessage: string,
 ): NormalizedApiError {
   const contentType = res.headers.get("content-type") ?? "";
   const isJson = contentType.includes(JSON_ACCEPT);
@@ -124,7 +124,6 @@ export function normalizedErrorFromResponse(
     return normalizeApiErrorBody(raw);
   }
   return {
-    message:
-      typeof raw === "string" ? raw : res.statusText || fallbackMessage,
+    message: typeof raw === "string" ? raw : res.statusText || fallbackMessage,
   };
 }

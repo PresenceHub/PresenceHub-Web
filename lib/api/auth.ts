@@ -7,7 +7,11 @@ import {
 } from "./client";
 import type { AuthUser } from "@/lib/auth/types";
 
-export type { AuthApiRoleDto, AuthApiUserDto, AuthSuccessResponseBody } from "./auth-contract";
+export type {
+  AuthApiRoleDto,
+  AuthApiUserDto,
+  AuthSuccessResponseBody,
+} from "./auth-contract";
 
 export type LoginPayload = {
   email: string;
@@ -26,8 +30,7 @@ export type AuthApiSuccess = {
   token: string;
   /** Workspace scope for `X-Workspace-Uuid` on authenticated API calls. */
   currentWorkspaceUuid: string;
-  user: Pick<AuthUser, "uuid"> &
-    Partial<Pick<AuthUser, "email" | "name">>;
+  user: Pick<AuthUser, "uuid"> & Partial<Pick<AuthUser, "email" | "name">>;
 };
 
 export type AuthApiFailure = {
@@ -44,7 +47,9 @@ export type LogoutApiResult =
   | { ok: true }
   | { ok: false; status: number; message: string };
 
-function getUserObjectFromResponse(data: unknown): Record<string, unknown> | null {
+function getUserObjectFromResponse(
+  data: unknown,
+): Record<string, unknown> | null {
   if (!data || typeof data !== "object") return null;
   const o = data as Record<string, unknown>;
   let user: unknown = o.user;
@@ -110,7 +115,7 @@ function extractCurrentWorkspaceUuid(data: unknown): string | null {
 
 async function postAuthJson(
   path: `api/v1/auth/${string}`,
-  body: Record<string, string>
+  body: Record<string, string>,
 ): Promise<AuthApiResult> {
   const api = getPresenceHubApi();
   if (!api) {
@@ -178,7 +183,9 @@ export function loginRequest(payload: LoginPayload): Promise<AuthApiResult> {
   });
 }
 
-export function registerRequest(payload: RegisterPayload): Promise<AuthApiResult> {
+export function registerRequest(
+  payload: RegisterPayload,
+): Promise<AuthApiResult> {
   return postAuthJson("api/v1/auth/register", {
     name: payload.name,
     email: payload.email,
@@ -193,7 +200,7 @@ export function registerRequest(payload: RegisterPayload): Promise<AuthApiResult
  */
 export async function logoutRequest(
   token: string,
-  workspaceUuid?: string
+  workspaceUuid?: string,
 ): Promise<LogoutApiResult> {
   const api = getPresenceHubApiWithBearer(token, { workspaceUuid });
   if (!api) {
@@ -213,7 +220,7 @@ export async function logoutRequest(
   const normalized = normalizedErrorFromResponse(
     res,
     raw,
-    "Logout request failed"
+    "Logout request failed",
   );
 
   return {

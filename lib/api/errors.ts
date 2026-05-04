@@ -18,8 +18,7 @@ export function normalizeApiErrorBody(body: unknown): NormalizedApiError {
     return { message: "Request failed" };
   }
   const o = body as Record<string, unknown>;
-  const message =
-    typeof o.message === "string" ? o.message : "Request failed";
+  const message = typeof o.message === "string" ? o.message : "Request failed";
 
   const rawErrors = o.errors;
   if (!rawErrors || typeof rawErrors !== "object" || Array.isArray(rawErrors)) {

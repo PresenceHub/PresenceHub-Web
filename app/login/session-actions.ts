@@ -14,7 +14,7 @@ export type EstablishSessionInput = {
 
 /** Sets httpOnly session cookies after a successful browser-side API login/register. */
 export async function establishSessionCookiesAction(
-  input: EstablishSessionInput
+  input: EstablishSessionInput,
 ): Promise<void> {
   await setAuthCookies({
     token: input.token,

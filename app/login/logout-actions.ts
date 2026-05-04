@@ -3,7 +3,10 @@
 import { cookies } from "next/headers";
 
 import { logoutRequest } from "@/lib/api/auth";
-import { AUTH_SESSION_COOKIE, AUTH_WORKSPACE_COOKIE } from "@/lib/auth/constants";
+import {
+  AUTH_SESSION_COOKIE,
+  AUTH_WORKSPACE_COOKIE,
+} from "@/lib/auth/constants";
 import { clearAuthCookies } from "@/lib/auth/persist-session";
 
 export type SignOutResult = {
@@ -29,7 +32,11 @@ export async function signOutAction(): Promise<SignOutResult> {
       revokeFailed = true;
       revokeMessage = revoke.message;
       if (process.env.NODE_ENV === "development") {
-        console.warn("[signOut] Token revoke failed:", revoke.status, revoke.message);
+        console.warn(
+          "[signOut] Token revoke failed:",
+          revoke.status,
+          revoke.message,
+        );
       }
     }
   }

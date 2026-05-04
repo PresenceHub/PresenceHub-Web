@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 function fieldError(
   fieldErrors: Record<string, string[]> | undefined,
-  key: string
+  key: string,
 ) {
   return fieldErrors?.[key]?.[0];
 }
@@ -93,11 +93,15 @@ export function RegisterForm() {
           autoComplete="name"
           required
           disabled={pending}
-          className={cn(fieldError(state.fieldErrors, "name") && "aria-invalid")}
+          className={cn(
+            fieldError(state.fieldErrors, "name") && "aria-invalid",
+          )}
           aria-invalid={Boolean(fieldError(state.fieldErrors, "name"))}
         />
         {fieldError(state.fieldErrors, "name") ? (
-          <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "name")}</p>
+          <p className="text-xs text-destructive">
+            {fieldError(state.fieldErrors, "name")}
+          </p>
         ) : null}
       </div>
       <div className="space-y-2">
@@ -111,15 +115,22 @@ export function RegisterForm() {
           autoComplete="email"
           required
           disabled={pending}
-          className={cn(fieldError(state.fieldErrors, "email") && "aria-invalid")}
+          className={cn(
+            fieldError(state.fieldErrors, "email") && "aria-invalid",
+          )}
           aria-invalid={Boolean(fieldError(state.fieldErrors, "email"))}
         />
         {fieldError(state.fieldErrors, "email") ? (
-          <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "email")}</p>
+          <p className="text-xs text-destructive">
+            {fieldError(state.fieldErrors, "email")}
+          </p>
         ) : null}
       </div>
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium text-foreground">
+        <label
+          htmlFor="password"
+          className="text-sm font-medium text-foreground"
+        >
           Password
         </label>
         <Input
@@ -129,15 +140,22 @@ export function RegisterForm() {
           autoComplete="new-password"
           required
           disabled={pending}
-          className={cn(fieldError(state.fieldErrors, "password") && "aria-invalid")}
+          className={cn(
+            fieldError(state.fieldErrors, "password") && "aria-invalid",
+          )}
           aria-invalid={Boolean(fieldError(state.fieldErrors, "password"))}
         />
         {fieldError(state.fieldErrors, "password") ? (
-          <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "password")}</p>
+          <p className="text-xs text-destructive">
+            {fieldError(state.fieldErrors, "password")}
+          </p>
         ) : null}
       </div>
       <div className="space-y-2">
-        <label htmlFor="confirm_password" className="text-sm font-medium text-foreground">
+        <label
+          htmlFor="confirm_password"
+          className="text-sm font-medium text-foreground"
+        >
           Confirm password
         </label>
         <Input
@@ -148,9 +166,11 @@ export function RegisterForm() {
           required
           disabled={pending}
           className={cn(
-            fieldError(state.fieldErrors, "confirm_password") && "aria-invalid"
+            fieldError(state.fieldErrors, "confirm_password") && "aria-invalid",
           )}
-          aria-invalid={Boolean(fieldError(state.fieldErrors, "confirm_password"))}
+          aria-invalid={Boolean(
+            fieldError(state.fieldErrors, "confirm_password"),
+          )}
         />
         {fieldError(state.fieldErrors, "confirm_password") ? (
           <p className="text-xs text-destructive">
@@ -163,7 +183,10 @@ export function RegisterForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link className="font-medium text-foreground underline underline-offset-4" href="/login">
+        <Link
+          className="font-medium text-foreground underline underline-offset-4"
+          href="/login"
+        >
           Sign in
         </Link>
       </p>
