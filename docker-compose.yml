@@ -13,10 +13,11 @@ services:
       - /app/node_modules
       - /app/.next
     working_dir: /app
-    # Use `pnpm exec` / package script so -H/-p go to `next dev` (not `next dev -- -H …`).
-    # Webpack dev + WATCHPACK_POLLING is more reliable for HMR on Docker bind mounts than Turbopack.
-    command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && pnpm run dev:docker-webpack"
+    # Webpack dev + polling: Turbopack is the default in Next 16; a custom
+    # webpack() block is enabled when CHOKIDAR/WATCHPACK polling is set, so we
+    # must run `next dev --webpack` or Next exits with a config mismatch error.
+    command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && next dev --webpack --hostname 0.0.0.0 --port 3000"
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://host.docker.internal}
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
