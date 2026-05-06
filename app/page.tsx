@@ -1,30 +1,36 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { CalendarDays, ChartNoAxesCombined, CheckCircle2, Clock, ImageIcon, Layers3, MessageSquareText, Send, Sparkles } from "lucide-react"
-
-
+  CalendarDays,
+  ChartNoAxesCombined,
+  CheckCircle2,
+  Clock,
+  ImageIcon,
+  Layers3,
+  MessageSquareText,
+  Send,
+  Sparkles,
+} from "lucide-react";
 
 const features = [
   {
     title: "Visual content calendar",
-    description: "Plan posts across channels with a clean weekly and monthly view.",
+    description:
+      "Plan posts across channels with a clean weekly and monthly view.",
     icon: CalendarDays,
   },
   {
     title: "Schedule everywhere",
-    description: "Create once and publish to multiple social platforms on time.",
+    description:
+      "Create once and publish to multiple social platforms on time.",
     icon: Send,
   },
   {
     title: "AI caption ideas",
-    description: "Generate better captions, hashtags, and post variations faster.",
+    description:
+      "Generate better captions, hashtags, and post variations faster.",
     icon: Sparkles,
   },
   {
@@ -35,11 +41,10 @@ const features = [
 ];
 
 const navLinks = [
-    { label: "Features", href: "#features" },
-    { label: "How it works", href: "#workflow" },
-    { label: "Pricing", href: "/pricing" },
-  ];
-  
+  { label: "Features", href: "#features" },
+  { label: "How it works", href: "#workflow" },
+  { label: "Pricing", href: "/pricing" },
+];
 
 const workflow = [
   "Connect your social accounts",
@@ -51,7 +56,7 @@ const workflow = [
 export default function Page() {
   return (
     <main className="min-h-screen bg-background">
-      <LandingHeader/>
+      <LandingHeader />
 
       <section className="relative overflow-hidden border-b">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
@@ -91,7 +96,7 @@ export default function Page() {
             </div>
           </div>
 
-          <HeroPreview/>
+          <HeroPreview />
         </div>
       </section>
 
@@ -110,7 +115,7 @@ export default function Page() {
                 >
                   {platform}
                 </div>
-              )
+              ),
             )}
           </div>
         </div>
@@ -205,105 +210,102 @@ export default function Page() {
   );
 }
 
-
-
 function HeroPreview() {
-    return (
-      <div className="rounded-3xl border bg-muted/40 p-4 shadow-sm">
-        <div className="rounded-2xl border bg-background p-5 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">Content calendar</p>
-              <p className="text-xs text-muted-foreground">This week</p>
-            </div>
-  
-            <Badge>Live preview</Badge>
+  return (
+    <div className="rounded-3xl border bg-muted/40 p-4 shadow-sm">
+      <div className="rounded-2xl border bg-background p-5 shadow-sm">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Content calendar</p>
+            <p className="text-xs text-muted-foreground">This week</p>
           </div>
-  
-          <div className="grid gap-3">
-            {[
-              {
-                icon: ImageIcon,
-                title: "Product launch post",
-                time: "Today, 10:30 AM",
-              },
-              {
-                icon: MessageSquareText,
-                title: "LinkedIn founder update",
-                time: "Tomorrow, 9:00 AM",
-              },
-              {
-                icon: Clock,
-                title: "Weekly tips carousel",
-                time: "Friday, 6:00 PM",
-              },
-            ].map((post) => (
-              <div
-                key={post.title}
-                className="flex items-center gap-4 rounded-2xl border p-4"
-              >
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <post.icon className="size-5" />
-                </div>
-  
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{post.title}</p>
-                  <p className="text-xs text-muted-foreground">{post.time}</p>
-                </div>
-  
-                <Badge variant="secondary">Scheduled</Badge>
+
+          <Badge>Live preview</Badge>
+        </div>
+
+        <div className="grid gap-3">
+          {[
+            {
+              icon: ImageIcon,
+              title: "Product launch post",
+              time: "Today, 10:30 AM",
+            },
+            {
+              icon: MessageSquareText,
+              title: "LinkedIn founder update",
+              time: "Tomorrow, 9:00 AM",
+            },
+            {
+              icon: Clock,
+              title: "Weekly tips carousel",
+              time: "Friday, 6:00 PM",
+            },
+          ].map((post) => (
+            <div
+              key={post.title}
+              className="flex items-center gap-4 rounded-2xl border p-4"
+            >
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <post.icon className="size-5" />
               </div>
-            ))}
+
+              <div className="flex-1">
+                <p className="text-sm font-medium">{post.title}</p>
+                <p className="text-xs text-muted-foreground">{post.time}</p>
+              </div>
+
+              <Badge variant="secondary">Scheduled</Badge>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 rounded-2xl bg-muted p-4">
+          <div className="mb-2 flex items-center justify-between text-sm">
+            <span className="font-medium">Posts scheduled</span>
+            <span className="text-muted-foreground">24/30</span>
           </div>
-  
-          <div className="mt-6 rounded-2xl bg-muted p-4">
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="font-medium">Posts scheduled</span>
-              <span className="text-muted-foreground">24/30</span>
-            </div>
-            <div className="h-2 rounded-full bg-background">
-              <div className="h-2 w-4/5 rounded-full bg-primary" />
-            </div>
+          <div className="h-2 rounded-full bg-background">
+            <div className="h-2 w-4/5 rounded-full bg-primary" />
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-
-  function LandingHeader() {
-    return (
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Layers3 className="size-5" />
-            </div>
-            <span>Presencehub</span>
-          </Link>
-  
-          <nav className="hidden items-center gap-6 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground transition hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-  
-          <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link href="/login">Login</Link>
-            </Button>
-  
-            <Button asChild>
-              <Link href="/register">Get started</Link>
-            </Button>
+function LandingHeader() {
+  return (
+    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-2 font-bold">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Layers3 className="size-5" />
           </div>
+          <span>Presencehub</span>
+        </Link>
+
+        <nav className="hidden items-center gap-6 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-muted-foreground transition hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <Button asChild variant="ghost" className="hidden sm:inline-flex">
+            <Link href="/login">Login</Link>
+          </Button>
+
+          <Button asChild>
+            <Link href="/register">Get started</Link>
+          </Button>
         </div>
-      </header>
-    );
-  }
+      </div>
+    </header>
+  );
+}

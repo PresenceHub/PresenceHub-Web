@@ -13,7 +13,6 @@ type AppShellProps = {
 };
 
 export function AppShell({ children }: AppShellProps) {
-
   const [open, setOpen] = React.useState(false);
   return (
     <SidebarProvider>
@@ -26,7 +25,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </div>
       </SidebarInset>
-      <CreatePostPanel open={open} setOpen={setOpen}/>
+      <CreatePostPanel open={open} setOpen={setOpen} />
     </SidebarProvider>
   );
 }

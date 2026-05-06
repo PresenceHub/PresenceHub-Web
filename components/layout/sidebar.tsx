@@ -47,9 +47,8 @@ export function AppSidebar({ onCreatePost }: { onCreatePost: () => void }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-      
         <SidebarGroup>
-        <SidebarMenu>
+          <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 tooltip="Create Post"
