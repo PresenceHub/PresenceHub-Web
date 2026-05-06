@@ -21,7 +21,7 @@ vi.mock("@/lib/api/client", () => ({
   normalizedErrorFromResponse: normalizedErrorFromResponseMock,
 }));
 
-import { loginRequest, logoutRequest, registerRequest } from "@/lib/api/auth";
+import { loginRequest, logoutRequest, registerRequest } from "@/features/auth/api/auth";
 
 describe("auth api module", () => {
   beforeEach(() => {

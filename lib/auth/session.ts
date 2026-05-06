@@ -8,7 +8,7 @@ import {
   AUTH_USER_COOKIE,
   AUTH_USER_UUID_STUB,
 } from "./constants";
-import type { AuthSession, AuthUser } from "./types";
+import type { AuthSession, AuthUser } from "@/features/auth/types/auth.types";
 
 export async function getSession(): Promise<AuthSession | null> {
   const cookieStore = await cookies();

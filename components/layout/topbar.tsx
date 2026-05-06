@@ -1,94 +1,49 @@
-"use client";
-
-import { useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
-
-import { signOutAction } from "@/app/login/logout-actions";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { pageTitleForPathname } from "@/lib/nav";
+import { pageTitleForPathname } from "@/config/nav"
+import { useCreatePostPanelStore } from "@/features/ui/store/use-create-post-panel-store"
+import { usePathname } from "next/navigation"
+import { SidebarTrigger } from "../ui/sidebar"
+import { Button } from "../ui/button"
+import { Plus } from "lucide-react"
 
 export function Topbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const title = pageTitleForPathname(pathname);
-  const [pending, startTransition] = useTransition();
-
-  function handleSignOut() {
-    console.log("handleSignOut");
-    startTransition(async () => {
-      console.log("startTransition");
-
-      const result = await signOutAction();
-      if (result.revokeFailed && result.revokeMessage) {
-        console.warn(
-          "[Sign out] Could not revoke token on server:",
-          result.revokeMessage,
-        );
-      }
-      router.push("/login");
-      router.refresh();
-    });
-  }
+  const pathname = usePathname()
+  const title = pageTitleForPathname(pathname)
+  const openPanel = useCreatePostPanelStore((state) => state.openPanel)
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-6">
-      <SidebarTrigger />
-      <div className="flex min-w-0 flex-1 items-center gap-4">
+    <header className="relative flex h-14 items-center border-b px-4">
+
+      {/* Floating Sidebar Trigger */}
+      <SidebarTrigger
+  // className="
+  //   absolute
+  //   left-0
+  //   top-1/2
+  //   z-[100]
+  //   -translate-x-[40%]
+  //   -translate-y-1/2
+  //   h-8
+  //   w-8
+  //   rounded-full
+  //   border
+  //   bg-background
+  //   shadow-md
+  // "
+/>
+
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-4 pl-6">
         <h1 className="truncate text-lg font-semibold tracking-tight">
           {title}
         </h1>
-        <div className="hidden max-w-md flex-1 md:block">
-          <Input
-            type="search"
-            placeholder="Search posts, accounts…"
-            className="h-9 bg-muted/50"
-            disabled
-            aria-disabled
-          />
-        </div>
+
+        <Button
+          size="icon"
+          className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition"
+          onClick={openPanel}
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" className="rounded-full">
-            <Avatar size="sm">
-              <AvatarFallback>PH</AvatarFallback>
-            </Avatar>
-            <span className="sr-only">Open user menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-0.5">
-              <p className="text-sm font-medium">Account</p>
-              <p className="text-xs text-muted-foreground">Signed in (stub)</p>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem disabled>Profile</DropdownMenuItem>
-          <DropdownMenuItem disabled>Settings</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            disabled={pending}
-            onSelect={(e) => {
-              e.preventDefault();
-              handleSignOut();
-            }}
-          >
-            {pending ? "Signing out…" : "Sign out"}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
     </header>
-  );
+  )
 }

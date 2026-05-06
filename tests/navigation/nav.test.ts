@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dashboardNav, pageTitleForPathname } from "@/lib/nav";
+import { dashboardNav, pageTitleForPathname } from "@/config/nav";
 
 describe("dashboardNav", () => {
   it("contains the expected top-level entries", () => {

@@ -6,6 +6,6 @@ export default async function DashboardGroupLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // await requireAuth();
+  await requireAuth();
   return <AppShell>{children}</AppShell>;
 }

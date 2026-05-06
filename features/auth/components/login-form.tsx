@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { establishSessionCookiesAction } from "../login/session-actions";
-import type { AuthFormState } from "../login/actions";
-import { registerRequest } from "@/lib/api/auth";
+import { establishSessionCookiesAction } from "../actions/session-actions";
+import type { AuthFormState } from "../actions/actions";
+import { loginRequest } from "@/features/auth/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -18,37 +18,26 @@ function fieldError(
   return fieldErrors?.[key]?.[0];
 }
 
-export function RegisterForm() {
+export function LoginForm() {
   const router = useRouter();
   const [state, setState] = useState<AuthFormState>({});
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const name = String(fd.get("name") ?? "").trim();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
-    const confirm_password = String(fd.get("confirm_password") ?? "");
 
-    if (!name || !email || !password || !confirm_password) {
-      setState({ error: "All fields are required." });
-      return;
-    }
-
-    if (password !== confirm_password) {
-      setState({ error: "Password and confirmation do not match." });
+    if (!email || !password) {
+      setState({ error: "Email and password are required." });
       return;
     }
 
     startTransition(async () => {
       setState({});
-      const result = await registerRequest({
-        name,
-        email,
-        password,
-        confirm_password,
-      });
+      const result = await loginRequest({ email, password });
       if (!result.ok) {
         setState({
           error: result.message,
@@ -61,7 +50,6 @@ export function RegisterForm() {
         token: result.token,
         currentWorkspaceUuid: result.currentWorkspaceUuid,
         emailFallback: email,
-        nameFallback: name,
         user: result.user,
       });
       router.push("/dashboard");
@@ -82,28 +70,6 @@ export function RegisterForm() {
           {state.error}
         </p>
       ) : null}
-      <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium text-foreground">
-          Name
-        </label>
-        <Input
-          id="name"
-          name="name"
-          type="text"
-          autoComplete="name"
-          required
-          disabled={pending}
-          className={cn(
-            fieldError(state.fieldErrors, "name") && "aria-invalid",
-          )}
-          aria-invalid={Boolean(fieldError(state.fieldErrors, "name"))}
-        />
-        {fieldError(state.fieldErrors, "name") ? (
-          <p className="text-xs text-destructive">
-            {fieldError(state.fieldErrors, "name")}
-          </p>
-        ) : null}
-      </div>
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium text-foreground">
           Email
@@ -137,7 +103,7 @@ export function RegisterForm() {
           id="password"
           name="password"
           type="password"
-          autoComplete="new-password"
+          autoComplete="current-password"
           required
           disabled={pending}
           className={cn(
@@ -151,43 +117,16 @@ export function RegisterForm() {
           </p>
         ) : null}
       </div>
-      <div className="space-y-2">
-        <label
-          htmlFor="confirm_password"
-          className="text-sm font-medium text-foreground"
-        >
-          Confirm password
-        </label>
-        <Input
-          id="confirm_password"
-          name="confirm_password"
-          type="password"
-          autoComplete="new-password"
-          required
-          disabled={pending}
-          className={cn(
-            fieldError(state.fieldErrors, "confirm_password") && "aria-invalid",
-          )}
-          aria-invalid={Boolean(
-            fieldError(state.fieldErrors, "confirm_password"),
-          )}
-        />
-        {fieldError(state.fieldErrors, "confirm_password") ? (
-          <p className="text-xs text-destructive">
-            {fieldError(state.fieldErrors, "confirm_password")}
-          </p>
-        ) : null}
-      </div>
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Creating account…" : "Create account"}
+        {pending ? "Signing in…" : "Sign in"}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        No account?{" "}
         <Link
           className="font-medium text-foreground underline underline-offset-4"
-          href="/login"
+          href="/register"
         >
-          Sign in
+          Register
         </Link>
       </p>
     </form>

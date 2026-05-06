@@ -8,7 +8,7 @@ import {
   AUTH_USER_UUID_STUB,
   AUTH_WORKSPACE_COOKIE,
 } from "./constants";
-import type { AuthUser } from "./types";
+import type { AuthUser } from "@/features/auth/types/auth.types";
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
 

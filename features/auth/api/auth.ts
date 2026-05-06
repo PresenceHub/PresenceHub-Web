@@ -4,14 +4,14 @@ import {
   getPresenceHubApi,
   getPresenceHubApiWithBearer,
   normalizedErrorFromResponse,
-} from "./client";
-import type { AuthUser } from "@/lib/auth/types";
+} from "../../../lib/api/client";
+import { AuthUser } from "../types/auth.types";
 
 export type {
   AuthApiRoleDto,
   AuthApiUserDto,
   AuthSuccessResponseBody,
-} from "./auth-contract";
+} from "../../../lib/api/auth-contract";
 
 export type LoginPayload = {
   email: string;

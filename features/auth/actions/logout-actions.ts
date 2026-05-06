@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-import { logoutRequest } from "@/lib/api/auth";
+import { logoutRequest } from "@/features/auth/api/auth";
 import {
   AUTH_SESSION_COOKIE,
   AUTH_WORKSPACE_COOKIE,

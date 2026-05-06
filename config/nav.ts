@@ -1,6 +1,5 @@
 import type { RemixiconComponentType } from "@remixicon/react";
 import {
-  RiBarChartLine,
   RiCalendarScheduleLine,
   RiDashboardLine,
   RiEdit2Line,
@@ -17,9 +16,9 @@ export type NavItem = {
 export const dashboardNav: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: RiDashboardLine },
   { title: "Queue", href: "/dashboard/queue", icon: RiCalendarScheduleLine },
-  { title: "Compose", href: "/dashboard/compose", icon: RiEdit2Line },
-  { title: "Analytics", href: "/dashboard/analytics", icon: RiBarChartLine },
-  { title: "Accounts", href: "/dashboard/accounts", icon: RiLinksLine },
+  // { title: "Compose", href: "/dashboard/compose", icon: RiEdit2Line },
+  // { title: "Analytics", href: "/dashboard/analytics", icon: RiBarChartLine },
+  // { title: "Accounts", href: "/dashboard/accounts", icon: RiLinksLine },
   { title: "Settings", href: "/dashboard/settings", icon: RiSettings3Line },
 ];
 

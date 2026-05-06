@@ -2,7 +2,8 @@
 
 import { AUTH_USER_UUID_STUB } from "@/lib/auth/constants";
 import { setAuthCookies } from "@/lib/auth/persist-session";
-import type { AuthUser } from "@/lib/auth/types";
+import { AuthUser } from "../types/auth.types";
+
 
 export type EstablishSessionInput = {
   token: string;
