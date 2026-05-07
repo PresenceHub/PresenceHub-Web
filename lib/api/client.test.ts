@@ -64,6 +64,24 @@ describe("api client helpers", () => {
     );
   });
 
+  it("omits workspace header when uuid is blank", () => {
+    getApiBaseUrlMock.mockReturnValue("https://api.example.com");
+    createMock.mockReturnValue({ post: vi.fn() });
+
+    getPresenceHubApiWithBearer("abc", { workspaceUuid: "   " });
+
+    expect(createMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer abc",
+        }),
+      }),
+    );
+    expect(createMock.mock.calls[0]?.[0]?.headers).not.toHaveProperty(
+      "X-Workspace-Uuid",
+    );
+  });
+
   it("reads JSON and text responses", async () => {
     const jsonRes = new Response(JSON.stringify({ ok: true }), {
       headers: { "content-type": "application/json" },
@@ -108,6 +126,16 @@ describe("api client helpers", () => {
     });
   });
 
+  it("uses generic network message when thrown value is not Error", async () => {
+    const post = vi.fn().mockRejectedValue("network down");
+    const out = await apiPostJson({ post } as never, "x", {});
+
+    expect(out.res.status).toBe(503);
+    expect(out.raw).toEqual({
+      message: "Could not reach API (Network request failed)",
+    });
+  });
+
   it("normalizes JSON errors and falls back for text", () => {
     normalizeApiErrorBodyMock.mockReturnValue({
       message: "Validation failed",
@@ -135,6 +163,28 @@ describe("api client helpers", () => {
       normalizedErrorFromResponse(textRes, "failed text", "fallback"),
     ).toEqual({
       message: "failed text",
+    });
+  });
+
+  it("falls back to statusText or provided fallback for non-json errors", () => {
+    const textRes = new Response("", {
+      status: 500,
+      statusText: "Server Error",
+      headers: { "content-type": "text/plain" },
+    });
+    expect(normalizedErrorFromResponse(textRes, 123, "fallback")).toEqual({
+      message: "Server Error",
+    });
+
+    const emptyStatusTextRes = new Response("", {
+      status: 500,
+      statusText: "",
+      headers: { "content-type": "text/plain" },
+    });
+    expect(
+      normalizedErrorFromResponse(emptyStatusTextRes, null, "fallback"),
+    ).toEqual({
+      message: "fallback",
     });
   });
 });

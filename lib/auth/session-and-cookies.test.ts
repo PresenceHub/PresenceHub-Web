@@ -32,6 +32,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import {
+  AUTH_USER_UUID_STUB,
   AUTH_SESSION_COOKIE,
   AUTH_USER_COOKIE,
   AUTH_WORKSPACE_COOKIE,
@@ -58,6 +59,34 @@ describe("auth session + cookie persistence", () => {
     expect(cookieValues.get(AUTH_SESSION_COOKIE)).toBe("token-1");
     expect(cookieValues.get(AUTH_WORKSPACE_COOKIE)).toBe("ws-1");
     expect(cookieValues.get(AUTH_USER_COOKIE)).toContain('"uuid":"user-1"');
+  });
+
+  it("sets session/workspace cookies even when user snapshot is omitted", async () => {
+    await setAuthCookies({
+      token: "token-2",
+      currentWorkspaceUuid: "ws-2",
+      user: null,
+    });
+
+    expect(cookieValues.get(AUTH_SESSION_COOKIE)).toBe("token-2");
+    expect(cookieValues.get(AUTH_WORKSPACE_COOKIE)).toBe("ws-2");
+    expect(cookieValues.has(AUTH_USER_COOKIE)).toBe(false);
+  });
+
+  it("fills missing user snapshot fields with defaults", async () => {
+    await setAuthCookies({
+      token: "token-3",
+      currentWorkspaceUuid: "ws-3",
+      user: {},
+    });
+
+    expect(cookieValues.get(AUTH_USER_COOKIE)).toBe(
+      JSON.stringify({
+        uuid: AUTH_USER_UUID_STUB,
+        email: null,
+        name: null,
+      }),
+    );
   });
 
   it("clears all auth cookies", async () => {
@@ -101,5 +130,18 @@ describe("auth session + cookie persistence", () => {
   it("redirects to login when auth is required but missing", async () => {
     await requireAuth();
     expect(redirectMock).toHaveBeenCalledWith("/login");
+  });
+
+  it("returns session when auth is present", async () => {
+    cookieValues.set(AUTH_SESSION_COOKIE, "token-1");
+    cookieValues.set(
+      AUTH_USER_COOKIE,
+      JSON.stringify({ uuid: "u-1", email: null }),
+    );
+
+    await expect(requireAuth()).resolves.toEqual({
+      user: { uuid: "u-1", email: null, name: null },
+    });
+    expect(redirectMock).not.toHaveBeenCalled();
   });
 });
