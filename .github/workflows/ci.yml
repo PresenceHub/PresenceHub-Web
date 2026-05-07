@@ -170,10 +170,10 @@ jobs:
             const body = [
               marker,
               '## Test Coverage',
-              `- Lines: ${format(lines, 60)}`,
-              `- Statements: ${format(statements, 60)}`,
-              `- Functions: ${format(functions, 60)}`,
-              `- Branches: ${format(branches, 50)}`,
+              `- Lines: ${format(lines, 80)}`,
+              `- Statements: ${format(statements, 80)}`,
+              `- Functions: ${format(functions, 80)}`,
+              `- Branches: ${format(branches, 75)}`,
             ].join('\n');
 
             const { owner, repo } = context.repo;
