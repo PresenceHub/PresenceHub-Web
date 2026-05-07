@@ -19,7 +19,7 @@ export default defineConfig({
     exclude: ["node_modules", ".next", "out", "build", "dist", ".pnpm-store"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html"],
+      reporter: ["text", "html", "json-summary"],
       include: ["lib/**/*.ts"],
       exclude: [
         "**/*.test.ts",
@@ -28,10 +28,10 @@ export default defineConfig({
         "**/*.spec.tsx",
       ],
       thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 50,
-        statements: 60,
+        lines: 80,
+        statements: 80,
+        functions: 80,
+        branches: 75,
       },
     },
   },

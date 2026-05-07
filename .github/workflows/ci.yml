@@ -1,0 +1,243 @@
+# Merge blocking: enable branch protection on the default branch and require
+# this workflow’s checks (e.g. "Lint / Lint and Check Format", "Lint / Unit tests and coverage")
+# under Settings → Branches → Branch protection rule → "Require status checks to pass".
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint:
+    name: Lint and Check Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        id: lint
+        run: pnpm run lint:github
+
+      - name: Format check
+        id: format
+        if: always()
+        run: pnpm run format:check
+
+      - name: TypeScript type-check
+        id: typecheck
+        if: always()
+        run: pnpm exec tsc --noEmit
+
+      - name: Comment checks summary on pull request
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- checks-summary-comment -->';
+            const statusMap = {
+              success: { icon: '✅', label: 'Passed' },
+              failure: { icon: '❌', label: 'Failed' },
+              cancelled: { icon: '⏹️', label: 'Cancelled' },
+              skipped: { icon: '⏭️', label: 'Skipped' },
+            };
+
+            const lintOutcome = '${{ steps.lint.outcome }}';
+            const formatOutcome = '${{ steps.format.outcome }}';
+            const typecheckOutcome = '${{ steps.typecheck.outcome }}';
+
+            const describe = (outcome) => statusMap[outcome] ?? { icon: '❔', label: outcome || 'Unknown' };
+            const lintStatus = describe(lintOutcome);
+            const formatStatus = describe(formatOutcome);
+            const typecheckStatus = describe(typecheckOutcome);
+
+            const prHeadSha = context.payload.pull_request?.head?.sha;
+            const livePull = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const livePrHeadSha = livePull.data.head.sha;
+            if (prHeadSha && livePrHeadSha && prHeadSha !== livePrHeadSha) {
+              core.info(`Skipping stale checks summary comment update for event head ${prHeadSha}; latest PR head is ${livePrHeadSha}.`);
+              return;
+            }
+
+            const body = [
+              marker,
+              '## Checks Summary',
+              `- ${lintStatus.icon} Lint: **${lintStatus.label}**`,
+              `- ${formatStatus.icon} Format: **${formatStatus.label}**`,
+              `- ${typecheckStatus.icon} TypeScript: **${typecheckStatus.label}**`,
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+  test:
+    name: Tests and Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests with coverage thresholds
+        id: coverage
+        run: pnpm run test:coverage
+
+      - name: Read coverage summary
+        id: coverage_read
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          set -eo pipefail
+          summary="coverage/coverage-summary.json"
+          if [ -f "${summary}" ]; then
+            lines=$(jq -r '.total.lines.pct' "${summary}")
+            statements=$(jq -r '.total.statements.pct' "${summary}")
+            functions=$(jq -r '.total.functions.pct' "${summary}")
+            branches=$(jq -r '.total.branches.pct' "${summary}")
+          else
+            lines=""
+            statements=""
+            functions=""
+            branches=""
+          fi
+          {
+            echo "lines=${lines}"
+            echo "statements=${statements}"
+            echo "functions=${functions}"
+            echo "branches=${branches}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment coverage on pull request
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- tests-coverage-comment -->';
+            const lines = '${{ steps.coverage_read.outputs.lines }}';
+            const statements = '${{ steps.coverage_read.outputs.statements }}';
+            const functions = '${{ steps.coverage_read.outputs.functions }}';
+            const branches = '${{ steps.coverage_read.outputs.branches }}';
+
+            const prHeadSha = context.payload.pull_request?.head?.sha;
+            const livePull = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const livePrHeadSha = livePull.data.head.sha;
+            if (prHeadSha && livePrHeadSha && prHeadSha !== livePrHeadSha) {
+              core.info(`Skipping stale coverage comment update for event head ${prHeadSha}; latest PR head is ${livePrHeadSha}.`);
+              return;
+            }
+
+            const metricLine = (label, value, threshold) => {
+              if (!value) {
+                return `- ❔ ${label}: **Unavailable** (threshold: ${threshold}%)`;
+              }
+              const numeric = Number(value);
+              if (Number.isNaN(numeric)) {
+                return `- ❔ ${label}: **${value}%** (threshold: ${threshold}%)`;
+              }
+              if (numeric < threshold) {
+                return `- ⚠️ ${label}: **${value}%** (threshold: ${threshold}% - below threshold)`;
+              }
+              return `- ✅ ${label}: **${value}%** (threshold: ${threshold}%)`;
+            };
+
+            const body = [
+              marker,
+              '## Test Coverage',
+              metricLine('Lines', lines, 80),
+              metricLine('Statements', statements, 80),
+              metricLine('Functions', functions, 80),
+              metricLine('Branches', branches, 75),
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Upload coverage HTML
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage
