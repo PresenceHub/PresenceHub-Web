@@ -72,8 +72,14 @@ jobs:
             const typecheckStatus = describe(typecheckOutcome);
 
             const prHeadSha = context.payload.pull_request?.head?.sha;
-            if (prHeadSha && prHeadSha !== context.sha) {
-              core.info(`Skipping stale checks summary comment update for ${context.sha}; latest PR head is ${prHeadSha}.`);
+            const livePull = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const livePrHeadSha = livePull.data.head.sha;
+            if (prHeadSha && livePrHeadSha && prHeadSha !== livePrHeadSha) {
+              core.info(`Skipping stale checks summary comment update for event head ${prHeadSha}; latest PR head is ${livePrHeadSha}.`);
               return;
             }
 
@@ -169,8 +175,14 @@ jobs:
             const branches = '${{ steps.coverage_read.outputs.branches }}';
 
             const prHeadSha = context.payload.pull_request?.head?.sha;
-            if (prHeadSha && prHeadSha !== context.sha) {
-              core.info(`Skipping stale coverage comment update for ${context.sha}; latest PR head is ${prHeadSha}.`);
+            const livePull = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const livePrHeadSha = livePull.data.head.sha;
+            if (prHeadSha && livePrHeadSha && prHeadSha !== livePrHeadSha) {
+              core.info(`Skipping stale coverage comment update for event head ${prHeadSha}; latest PR head is ${livePrHeadSha}.`);
               return;
             }
 
