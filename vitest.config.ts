@@ -19,7 +19,7 @@ export default defineConfig({
     exclude: ["node_modules", ".next", "out", "build", "dist", ".pnpm-store"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html"],
+      reporter: ["text", "html", "json-summary"],
       include: ["lib/**/*.ts"],
       exclude: [
         "**/*.test.ts",
