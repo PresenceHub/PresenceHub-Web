@@ -18,6 +18,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { CirclePlusIcon } from "lucide-react";
 
 function navIsActive(pathname: string, href: string): boolean {
   if (href === "/dashboard") {
@@ -26,7 +27,7 @@ function navIsActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppSidebar() {
+export function AppSidebar({ onCreatePost }: { onCreatePost: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -47,6 +48,18 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Create Post"
+                onClick={onCreatePost}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <CirclePlusIcon />
+                <span>Create Post</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
