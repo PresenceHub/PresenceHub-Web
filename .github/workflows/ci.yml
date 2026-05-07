@@ -186,27 +186,27 @@ jobs:
               return;
             }
 
-            const format = (value, threshold) => {
+            const metricLine = (label, value, threshold) => {
               if (!value) {
-                return `**Unavailable** (threshold: ${threshold}%)`;
+                return `- ❔ ${label}: **Unavailable** (threshold: ${threshold}%)`;
               }
               const numeric = Number(value);
               if (Number.isNaN(numeric)) {
-                return `**${value}%** (threshold: ${threshold}%)`;
+                return `- ❔ ${label}: **${value}%** (threshold: ${threshold}%)`;
               }
               if (numeric < threshold) {
-                return `⚠️ **${value}%** (threshold: ${threshold}% - below threshold)`;
+                return `- ⚠️ ${label}: **${value}%** (threshold: ${threshold}% - below threshold)`;
               }
-              return `✅ **${value}%** (threshold: ${threshold}%)`;
+              return `- ✅ ${label}: **${value}%** (threshold: ${threshold}%)`;
             };
 
             const body = [
               marker,
               '## Test Coverage',
-              `- Lines: ${format(lines, 80)}`,
-              `- Statements: ${format(statements, 80)}`,
-              `- Functions: ${format(functions, 80)}`,
-              `- Branches: ${format(branches, 75)}`,
+              metricLine('Lines', lines, 80),
+              metricLine('Statements', statements, 80),
+              metricLine('Functions', functions, 80),
+              metricLine('Branches', branches, 75),
             ].join('\n');
 
             const { owner, repo } = context.repo;
