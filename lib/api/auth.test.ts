@@ -165,6 +165,53 @@ describe("auth api module", () => {
     });
   });
 
+  it("returns helpful error when user uuid is missing", async () => {
+    getPresenceHubApiMock.mockReturnValue({});
+    apiPostJsonMock.mockResolvedValue({
+      res: new Response(JSON.stringify({ token: "t", user: {} }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+      raw: { token: "t", user: {} },
+    });
+
+    await expect(
+      loginRequest({ email: "a@b.com", password: "x" }),
+    ).resolves.toMatchObject({
+      ok: false,
+      message: expect.stringContaining("user.uuid"),
+    });
+  });
+
+  it("accepts nested user object and plainTextToken", async () => {
+    getPresenceHubApiMock.mockReturnValue({});
+    apiPostJsonMock.mockResolvedValue({
+      res: new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+      raw: {
+        plainTextToken: "token-3",
+        data: {
+          user: {
+            uuid: "user-3",
+            email: "c@d.com",
+            currentWorkspace: { uuid: " ws-3 " },
+          },
+        },
+      },
+    });
+
+    await expect(
+      loginRequest({ email: "c@d.com", password: "x" }),
+    ).resolves.toEqual({
+      ok: true,
+      token: "token-3",
+      currentWorkspaceUuid: "ws-3",
+      user: { uuid: "user-3", email: "c@d.com" },
+    });
+  });
+
   it("handles logout success and failure", async () => {
     getPresenceHubApiWithBearerMock.mockReturnValue({});
     apiPostJsonMock.mockResolvedValue({
@@ -188,6 +235,15 @@ describe("auth api module", () => {
       ok: false,
       status: 401,
       message: "denied",
+    });
+  });
+
+  it("returns config error when bearer client is missing", async () => {
+    getPresenceHubApiWithBearerMock.mockReturnValue(null);
+
+    await expect(logoutRequest("t", "ws")).resolves.toMatchObject({
+      ok: false,
+      status: 0,
     });
   });
 });
