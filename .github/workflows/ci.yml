@@ -72,8 +72,14 @@ jobs:
             const typecheckStatus = describe(typecheckOutcome);
 
             const prHeadSha = context.payload.pull_request?.head?.sha;
+            // #region agent log
+            fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H1',location:'.github/workflows/ci.yml:checks-comment',message:'Checks comment SHA comparison',data:{eventName:context.eventName,contextSha:context.sha,prHeadSha,isStale:!!(prHeadSha&&prHeadSha!==context.sha)},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             if (prHeadSha && prHeadSha !== context.sha) {
               core.info(`Skipping stale checks summary comment update for ${context.sha}; latest PR head is ${prHeadSha}.`);
+              // #region agent log
+              fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H1',location:'.github/workflows/ci.yml:checks-comment',message:'Checks comment skipped as stale',data:{contextSha:context.sha,prHeadSha},timestamp:Date.now()})}).catch(()=>{});
+              // #endregion
               return;
             }
 
@@ -94,21 +100,37 @@ jobs:
               per_page: 100,
             });
             const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            // #region agent log
+            fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:checks-comment',message:'Checks comment existing marker lookup',data:{hasExisting:!!existing},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body,
-              });
+            try {
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+                // #region agent log
+                fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:checks-comment',message:'Checks comment updated',data:{commentId:existing.id},timestamp:Date.now()})}).catch(()=>{});
+                // #endregion
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body,
+                });
+                // #region agent log
+                fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:checks-comment',message:'Checks comment created',data:{issueNumber:issue_number},timestamp:Date.now()})}).catch(()=>{});
+                // #endregion
+              }
+            } catch (error) {
+              // #region agent log
+              fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:checks-comment',message:'Checks comment API error',data:{errorMessage:error?.message||'unknown'},timestamp:Date.now()})}).catch(()=>{});
+              // #endregion
+              throw error;
             }
 
   test:
@@ -169,8 +191,14 @@ jobs:
             const branches = '${{ steps.coverage_read.outputs.branches }}';
 
             const prHeadSha = context.payload.pull_request?.head?.sha;
+            // #region agent log
+            fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H1',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage comment SHA comparison',data:{eventName:context.eventName,contextSha:context.sha,prHeadSha,isStale:!!(prHeadSha&&prHeadSha!==context.sha)},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             if (prHeadSha && prHeadSha !== context.sha) {
               core.info(`Skipping stale coverage comment update for ${context.sha}; latest PR head is ${prHeadSha}.`);
+              // #region agent log
+              fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H1',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage comment skipped as stale',data:{contextSha:context.sha,prHeadSha},timestamp:Date.now()})}).catch(()=>{});
+              // #endregion
               return;
             }
 
@@ -187,6 +215,9 @@ jobs:
               }
               return `✅ **${value}%** (threshold: ${threshold}%)`;
             };
+            // #region agent log
+            fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H2',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage values computed',data:{lines,statements,functions,branches},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
 
             const body = [
               marker,
@@ -206,21 +237,37 @@ jobs:
               per_page: 100,
             });
             const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            // #region agent log
+            fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage comment existing marker lookup',data:{hasExisting:!!existing},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body,
-              });
+            try {
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+                // #region agent log
+                fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage comment updated',data:{commentId:existing.id},timestamp:Date.now()})}).catch(()=>{});
+                // #endregion
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body,
+                });
+                // #region agent log
+                fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage comment created',data:{issueNumber:issue_number},timestamp:Date.now()})}).catch(()=>{});
+                // #endregion
+              }
+            } catch (error) {
+              // #region agent log
+              fetch('http://127.0.0.1:7775/ingest/ac937827-e231-4236-bcb4-617985a854ed',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'746f03'},body:JSON.stringify({sessionId:'746f03',runId:'pre-fix',hypothesisId:'H4',location:'.github/workflows/ci.yml:coverage-comment',message:'Coverage comment API error',data:{errorMessage:error?.message||'unknown'},timestamp:Date.now()})}).catch(()=>{});
+              // #endregion
+              throw error;
             }
 
       - name: Upload coverage HTML
