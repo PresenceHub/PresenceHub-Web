@@ -71,6 +71,12 @@ jobs:
             const formatStatus = describe(formatOutcome);
             const typecheckStatus = describe(typecheckOutcome);
 
+            const prHeadSha = context.payload.pull_request?.head?.sha;
+            if (prHeadSha && prHeadSha !== context.sha) {
+              core.info(`Skipping stale checks summary comment update for ${context.sha}; latest PR head is ${prHeadSha}.`);
+              return;
+            }
+
             const body = [
               marker,
               '## Checks Summary',
@@ -162,10 +168,25 @@ jobs:
             const functions = '${{ steps.coverage_read.outputs.functions }}';
             const branches = '${{ steps.coverage_read.outputs.branches }}';
 
-            const format = (value, threshold) =>
-              value
-                ? `**${value}%** (threshold: ${threshold}%)`
-                : `**Unavailable** (threshold: ${threshold}%)`;
+            const prHeadSha = context.payload.pull_request?.head?.sha;
+            if (prHeadSha && prHeadSha !== context.sha) {
+              core.info(`Skipping stale coverage comment update for ${context.sha}; latest PR head is ${prHeadSha}.`);
+              return;
+            }
+
+            const format = (value, threshold) => {
+              if (!value) {
+                return `**Unavailable** (threshold: ${threshold}%)`;
+              }
+              const numeric = Number(value);
+              if (Number.isNaN(numeric)) {
+                return `**${value}%** (threshold: ${threshold}%)`;
+              }
+              if (numeric < threshold) {
+                return `⚠️ **${value}%** (threshold: ${threshold}% - below threshold)`;
+              }
+              return `✅ **${value}%** (threshold: ${threshold}%)`;
+            };
 
             const body = [
               marker,
