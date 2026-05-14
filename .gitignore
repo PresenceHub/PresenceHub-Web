@@ -4,6 +4,7 @@
 /.pnpm-store
 /node_modules
 package-lock.json
+/.cursor
 /.pnp
 .pnp.*
 .yarn/*
@@ -42,3 +43,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cursor
+/.cursor
