@@ -1,4 +1,14 @@
 #!/usr/bin/env sh
 set -e
-cd "$(git rev-parse --show-toplevel)"
-pnpm run format
+# cd "$(git rev-parse --show-toplevel)"
+
+echo "Linting..."
+pnpm run lint
+
+echo "Checing Format..."
+pnpm run format:check
+
+echo "Checking TypeScript types..."
+pnpm exec tsc --noEmit
+
+echo "ALL GOOD!"
