@@ -37,7 +37,7 @@ If your API runs on a different host/port, update `NEXT_PUBLIC_API_URL` in `.env
 pnpm run setup-hooks
 ```
 
-This enables the pre-commit hook that formats files before each commit.
+This enables the pre-commit hook that runs ESLint, Prettier in check mode, and `tsc --noEmit` before each commit (same checks as the CI lint job). To run the same checks manually: `pnpm run lint`, `pnpm run format:check`, and `pnpm exec tsc --noEmit`.
 
 ## 4) Start the development server
 
