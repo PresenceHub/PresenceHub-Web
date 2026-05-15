@@ -14,7 +14,7 @@ Follow these steps to get PresenceHub Web running locally.
 ```bash
 corepack enable
 corepack prepare pnpm@10.33.2 --activate
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
 ## 2) Create local environment file
@@ -29,7 +29,13 @@ Default value:
 NEXT_PUBLIC_API_URL=http://localhost
 ```
 
-If your API runs on a different host/port, update `NEXT_PUBLIC_API_URL` in `.env.local`.
+Choose the API origin that matches how the Laravel API is running:
+
+- Host API with `php artisan serve`: `NEXT_PUBLIC_API_URL=http://localhost:8000`
+- API Docker Compose through nginx on port 80: `NEXT_PUBLIC_API_URL=http://localhost`
+- API Docker Compose through local HTTPS: `NEXT_PUBLIC_API_URL=https://presencehub.test`
+
+Use the origin only; API paths such as `/api/v1/...` are appended in code. For server-side requests only, you may also set `API_URL`; if unset, server actions fall back to `NEXT_PUBLIC_API_URL`.
 
 ## 3) Set up git hooks (recommended)
 
@@ -65,11 +71,15 @@ By default, Docker Compose setup uses:
 NEXT_PUBLIC_API_URL=http://host.docker.internal
 ```
 
+Because `NEXT_PUBLIC_API_URL` is also used by browser code, set it to a URL your browser can reach. Common values are `http://localhost:8000` for a host API server, `http://localhost` for API nginx on port 80, or `https://presencehub.test` for API nginx with local TLS.
+
 If your API is reachable at a different URL, set it when starting compose:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://your-api-host docker compose up --build
 ```
+
+The Docker dev service runs `pnpm run dev:docker`, which starts Next.js on `0.0.0.0:3000` with webpack and file polling enabled for bind-mounted source files.
 
 3. Stop the stack:
 
@@ -84,7 +94,8 @@ docker compose down
 - Optional quality checks:
 
 ```bash
-pnpm lint
-pnpm format:check
-pnpm test
+pnpm run lint
+pnpm run format:check
+pnpm exec tsc --noEmit
+pnpm run test
 ```
