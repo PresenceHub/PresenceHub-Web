@@ -1,6 +1,15 @@
 import { LoginForm } from "./login-form";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    reset?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const passwordResetSuccess = params.reset === "success";
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
       <div className="space-y-1 text-center">
@@ -9,7 +18,7 @@ export default function LoginPage() {
           Use your PresenceHub account to open the dashboard.
         </p>
       </div>
-      <LoginForm />
+      <LoginForm passwordResetSuccess={passwordResetSuccess} />
     </div>
   );
 }
