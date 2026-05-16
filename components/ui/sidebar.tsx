@@ -163,6 +163,213 @@ function Sidebar({
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
+  React.useEffect(() => {
+    if (isMobile) {
+      return;
+    }
+    const sidebarElement = document.querySelector<HTMLElement>(
+      '[data-slot="sidebar"][data-state]',
+    );
+    const sidebarContainerElement = document.querySelector<HTMLElement>(
+      '[data-slot="sidebar-container"]',
+    );
+
+    const logSidebarMetrics = (
+      message: string,
+      hypothesisId: "H_LAYOUT_CSS" | "H_TRANSITION_INTERMEDIATE",
+      transitionMeta?: Record<string, string | number | null>,
+    ) => {
+      const buttonElements = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-sidebar="menu-button"]'),
+      ).slice(0, 10);
+
+      const buttonMetrics = buttonElements.map((button, index) => {
+        const iconElement = button.querySelector<HTMLElement>(
+          "img,svg,span[aria-label]",
+        );
+        const buttonRect = button.getBoundingClientRect();
+        const iconRect = iconElement?.getBoundingClientRect();
+        const buttonStyle = window.getComputedStyle(button);
+
+        return {
+          index,
+          dataSize: button.dataset.size ?? "default",
+          className: button.className,
+          buttonTop: Math.round(buttonRect.top),
+          buttonHeight: Math.round(buttonRect.height),
+          iconTag: iconElement?.tagName.toLowerCase() ?? "none",
+          iconTop: iconRect ? Math.round(iconRect.top) : null,
+          iconHeight: iconRect ? Math.round(iconRect.height) : null,
+          iconOffsetFromButtonTop: iconRect
+            ? Math.round(iconRect.top - buttonRect.top)
+            : null,
+          alignItems: buttonStyle.alignItems,
+          justifyContent: buttonStyle.justifyContent,
+          paddingTop: buttonStyle.paddingTop,
+          paddingBottom: buttonStyle.paddingBottom,
+          lineHeight: buttonStyle.lineHeight,
+        };
+      });
+
+      const groupLabels = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-sidebar="group-label"]'),
+      );
+      const channelsLabel = groupLabels.find((label) =>
+        label.textContent?.trim().toLowerCase().includes("channels"),
+      );
+      const channelsGroup = channelsLabel?.closest<HTMLElement>(
+        '[data-sidebar="group"]',
+      );
+      const channelsMenu = channelsGroup?.querySelector<HTMLElement>(
+        '[data-sidebar="menu"]',
+      );
+      const channelsFirstButton = channelsMenu?.querySelector<HTMLElement>(
+        '[data-sidebar="menu-button"]',
+      );
+      const channelsLabelStyle = channelsLabel
+        ? window.getComputedStyle(channelsLabel)
+        : null;
+      const channelsGroupRect = channelsGroup?.getBoundingClientRect();
+      const channelsMenuRect = channelsMenu?.getBoundingClientRect();
+      const channelsFirstButtonRect =
+        channelsFirstButton?.getBoundingClientRect();
+      const channelsLabelRect = channelsLabel?.getBoundingClientRect();
+      const sidebarContainerRect =
+        sidebarContainerElement?.getBoundingClientRect();
+
+      // #region agent log
+      fetch(
+        "http://127.0.0.1:7635/ingest/4d56a83c-cea8-434f-9bbe-207aff5b06b8",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "3a9ee5",
+          },
+          body: JSON.stringify({
+            sessionId: "3a9ee5",
+            runId: "pre-fix",
+            hypothesisId,
+            location: "components/ui/sidebar.tsx:Sidebar/useEffect",
+            message,
+            data: {
+              state,
+              collapsible,
+              variant,
+              sidebarDataset: sidebarElement
+                ? {
+                    state: sidebarElement.dataset.state ?? null,
+                    collapsible: sidebarElement.dataset.collapsible ?? null,
+                    side: sidebarElement.dataset.side ?? null,
+                  }
+                : null,
+              sidebarContainerTop: sidebarContainerRect
+                ? Math.round(sidebarContainerRect.top)
+                : null,
+              sidebarContainerHeight: sidebarContainerRect
+                ? Math.round(sidebarContainerRect.height)
+                : null,
+              transitionMeta: transitionMeta ?? null,
+              buttonMetrics,
+              channelsGroupMetrics: channelsGroupRect
+                ? {
+                    groupTop: Math.round(channelsGroupRect.top),
+                    groupHeight: Math.round(channelsGroupRect.height),
+                    menuTop: channelsMenuRect
+                      ? Math.round(channelsMenuRect.top)
+                      : null,
+                    firstButtonTop: channelsFirstButtonRect
+                      ? Math.round(channelsFirstButtonRect.top)
+                      : null,
+                    labelTop: channelsLabelRect
+                      ? Math.round(channelsLabelRect.top)
+                      : null,
+                    labelHeight: channelsLabelRect
+                      ? Math.round(channelsLabelRect.height)
+                      : null,
+                    labelMarginTop: channelsLabelStyle?.marginTop ?? null,
+                    labelOpacity: channelsLabelStyle?.opacity ?? null,
+                    labelTransform: channelsLabelStyle?.transform ?? null,
+                    groupPaddingTop: channelsGroup
+                      ? window.getComputedStyle(channelsGroup).paddingTop
+                      : null,
+                    menuGap: channelsMenu
+                      ? window.getComputedStyle(channelsMenu).gap
+                      : null,
+                  }
+                : null,
+            },
+            timestamp: Date.now(),
+          }),
+        },
+      ).catch(() => {});
+      // #endregion
+    };
+
+    logSidebarMetrics(
+      "Sidebar menu button metrics on state change",
+      "H_LAYOUT_CSS",
+    );
+
+    const handleTransitionEvent = (event: TransitionEvent) => {
+      if (
+        event.propertyName !== "width" &&
+        event.propertyName !== "padding" &&
+        event.propertyName !== "height"
+      ) {
+        return;
+      }
+
+      logSidebarMetrics(
+        "Sidebar transition frame captured",
+        "H_TRANSITION_INTERMEDIATE",
+        {
+          eventType: event.type,
+          propertyName: event.propertyName,
+        },
+      );
+    };
+
+    sidebarContainerElement?.addEventListener(
+      "transitionrun",
+      handleTransitionEvent,
+    );
+    sidebarContainerElement?.addEventListener(
+      "transitionend",
+      handleTransitionEvent,
+    );
+
+    let frameCount = 0;
+    let animationFrameId = 0;
+    const sampleFrames = () => {
+      frameCount += 1;
+      logSidebarMetrics(
+        "Sidebar animation frame sample",
+        "H_TRANSITION_INTERMEDIATE",
+        {
+          eventType: "raf",
+          frameCount,
+        },
+      );
+      if (frameCount < 4) {
+        animationFrameId = window.requestAnimationFrame(sampleFrames);
+      }
+    };
+    animationFrameId = window.requestAnimationFrame(sampleFrames);
+
+    return () => {
+      sidebarContainerElement?.removeEventListener(
+        "transitionrun",
+        handleTransitionEvent,
+      );
+      sidebarContainerElement?.removeEventListener(
+        "transitionend",
+        handleTransitionEvent,
+      );
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [collapsible, isMobile, state, variant]);
+
   if (collapsible === "none") {
     return (
       <div
@@ -404,7 +611,7 @@ function SidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        "flex h-8 shrink-0 items-center rounded-xl px-3 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "flex h-8 shrink-0 items-center rounded-xl px-3 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         className,
       )}
       {...props}
@@ -469,7 +676,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate",
+  "peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&_img]:block [&_img]:size-4 [&_img]:shrink-0 [&_img]:object-contain [&>span:last-child]:truncate",
   {
     variants: {
       variant: {

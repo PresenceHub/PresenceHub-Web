@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { dashboardNav } from "@/lib/nav";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -22,8 +20,8 @@ import {
   BellIcon,
   ChevronsUpDownIcon,
   CirclePlusIcon,
-  CircleUserRound,
   CreditCardIcon,
+  LayoutDashboard,
   LogOutIcon,
 } from "lucide-react";
 import {
@@ -38,22 +36,39 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { useTransition } from "react";
 import { signOutAction } from "@/app/login/logout-actions";
+import type { PlatformDto } from "@/lib/api/platforms-payload";
 import { useCreatePostPanelStore } from "@/store/use-create-post-panel-store";
-import { NavProjects } from "../ui/nav-projects";
+import { NavPlatforms } from "../ui/nav-platforms";
 
-function navIsActive(pathname: string, href: string): boolean {
-  if (href === "/dashboard") {
-    return pathname === "/dashboard";
+export type SidebarUserIdentity = {
+  displayName: string;
+  email: string;
+};
+
+function initialsFromDisplayName(displayName: string): string {
+  const parts = displayName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return "?";
   }
-  return pathname === href || pathname.startsWith(`${href}/`);
+  if (parts.length === 1) {
+    return parts[0]!.slice(0, 2).toUpperCase();
+  }
+  return `${parts[0]![0]}${parts[parts.length - 1]![0]}`.toUpperCase();
 }
 
-export function AppSidebar() {
+export type AppSidebarProps = {
+  user: SidebarUserIdentity;
+  platforms: PlatformDto[];
+};
+
+export function AppSidebar({ user, platforms }: AppSidebarProps) {
   const pathname = usePathname();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const openPanel = useCreatePostPanelStore((state) => state.openPanel);
+
+  const avatarInitials = initialsFromDisplayName(user.displayName);
 
   function handleSignOut() {
     startTransition(async () => {
@@ -97,37 +112,21 @@ export function AppSidebar() {
                 <span>Create Post</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          </SidebarMenu>
-
-          <SidebarGroupLabel
-            className="
-          h-8
-          mt-2
-          group-data-[collapsible=icon]:mt-2
-          group-data-[collapsible=icon]:h-8
-        "
-          >
-            Workspace
-          </SidebarGroupLabel>
-
-          <SidebarMenu>
-            {dashboardNav.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.title}
-                  isActive={navIsActive(pathname, item.href)}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Dashboard"
+                isActive={pathname === "/dashboard"}
+              >
+                <Link href="/dashboard">
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <NavProjects />
+        <NavPlatforms platforms={platforms} />
       </SidebarContent>
 
       <SidebarFooter>
@@ -140,24 +139,21 @@ export function AppSidebar() {
                   size="lg"
                   className="h-12 min-h-12 w-full flex items-center justify-start gap-2 px-2 overflow-hidden"
                 >
-                  {/* Avatar */}
                   <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback>
-                      <CircleUserRound />
-                    </AvatarFallback>
+                    <AvatarFallback>{avatarInitials}</AvatarFallback>
                   </Avatar>
 
-                  {/* Text */}
                   <div className="flex flex-col justify-center flex-1 overflow-hidden">
                     <span className="truncate text-sm font-medium leading-tight">
-                      user
+                      {user.displayName}
                     </span>
-                    <span className="truncate text-xs leading-tight">
-                      user@example.com
-                    </span>
+                    {user.email ? (
+                      <span className="truncate text-xs leading-tight text-muted-foreground">
+                        {user.email}
+                      </span>
+                    ) : null}
                   </div>
 
-                  {/* Icon */}
                   <ChevronsUpDownIcon className="ml-auto size-4 shrink-0" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -171,18 +167,18 @@ export function AppSidebar() {
                 <DropdownMenuLabel>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback>
-                        <CircleUserRound />
-                      </AvatarFallback>
+                      <AvatarFallback>{avatarInitials}</AvatarFallback>
                     </Avatar>
 
                     <div className="flex flex-col overflow-hidden">
                       <span className="text-sm font-medium leading-tight">
-                        user
+                        {user.displayName}
                       </span>
-                      <span className="text-xs truncate leading-tight">
-                        user@example.com
-                      </span>
+                      {user.email ? (
+                        <span className="text-xs truncate leading-tight text-muted-foreground">
+                          {user.email}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </DropdownMenuLabel>

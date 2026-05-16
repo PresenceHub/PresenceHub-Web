@@ -6,6 +6,9 @@ const useDockerFriendlyWatching =
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  env: {
+    PH_API_URL: process.env.PH_API_URL,
+  },
   // Next 16 defaults to Turbopack; an empty object acknowledges that when a
   // `webpack` key also exists (e.g. Docker polling below). See:
   // https://nextjs.org/docs/app/api-reference/next-config-js/turbopack

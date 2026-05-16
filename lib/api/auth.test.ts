@@ -13,8 +13,7 @@ const {
 }));
 
 vi.mock("@/lib/api/client", () => ({
-  API_URL_NOT_CONFIGURED_MESSAGE:
-    "API URL is not configured (set NEXT_PUBLIC_API_URL or API_URL).",
+  API_URL_NOT_CONFIGURED_MESSAGE: "API URL is not configured (set PH_API_URL).",
   getPresenceHubApi: getPresenceHubApiMock,
   getPresenceHubApiWithBearer: getPresenceHubApiWithBearerMock,
   apiPostJson: apiPostJsonMock,

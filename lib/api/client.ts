@@ -3,9 +3,9 @@ import ky, { type KyInstance } from "ky";
 import { getApiBaseUrl } from "./env";
 import { normalizeApiErrorBody, type NormalizedApiError } from "./errors";
 
-/** Shared message when `API_URL` / `NEXT_PUBLIC_API_URL` is unset. */
+/** Shared message when `PH_API_URL` is unset. */
 export const API_URL_NOT_CONFIGURED_MESSAGE =
-  "API URL is not configured (set NEXT_PUBLIC_API_URL or API_URL).";
+  "API URL is not configured (set PH_API_URL).";
 
 const JSON_ACCEPT = "application/json";
 
@@ -75,6 +75,37 @@ export async function readApiResponseBody(res: Response): Promise<unknown> {
 }
 
 type KyPostOptions = NonNullable<Parameters<KyInstance["post"]>[1]>;
+type KyGetOptions = NonNullable<Parameters<KyInstance["get"]>[1]>;
+
+/**
+ * GET JSON and read the response body (JSON or text). Domain modules map `raw` to result types.
+ * Network failures (no TCP/TLS, DNS, etc.) are turned into a non-OK JSON Response so callers do not throw.
+ */
+export async function apiGetJson(
+  api: KyInstance,
+  path: string,
+  options?: Omit<KyGetOptions, "json" | "body">,
+): Promise<{ res: Response; raw: unknown }> {
+  try {
+    const res = await api.get(path, options);
+    const raw = await readApiResponseBody(res);
+    return { res, raw };
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Network request failed";
+    const res = new Response(
+      JSON.stringify({
+        message: `Could not reach API (${message})`,
+      }),
+      {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const raw = await readApiResponseBody(res);
+    return { res, raw };
+  }
+}
 
 /**
  * POST JSON and read the response body (JSON or text). Domain modules map `raw` to result types.

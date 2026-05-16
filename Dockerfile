@@ -16,8 +16,8 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG NEXT_PUBLIC_API_URL=http://localhost
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ARG PH_API_URL=http://localhost/api
+ENV PH_API_URL=${PH_API_URL}
 ENV NODE_ENV=production
 RUN pnpm run build
 
