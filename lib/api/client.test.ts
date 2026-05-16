@@ -23,6 +23,7 @@ vi.mock("@/lib/api/errors", () => ({
 }));
 
 import {
+  apiGetJson,
   apiPostJson,
   getPresenceHubApi,
   getPresenceHubApiWithBearer,
@@ -123,6 +124,34 @@ describe("api client helpers", () => {
     expect(out.res.status).toBe(503);
     expect(out.raw).toEqual({
       message: "Could not reach API (boom)",
+    });
+  });
+
+  it("gets JSON and returns parsed body", async () => {
+    const mockRes = new Response(JSON.stringify({ data: [{ slug: "a" }] }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+    const get = vi.fn().mockResolvedValue(mockRes);
+
+    const out = await apiGetJson({ get } as never, "api/v1/platforms", {
+      timeout: 1000,
+    });
+
+    expect(get).toHaveBeenCalledWith("api/v1/platforms", {
+      timeout: 1000,
+    });
+    expect(out.res.status).toBe(200);
+    expect(out.raw).toEqual({ data: [{ slug: "a" }] });
+  });
+
+  it("maps GET network errors into a synthetic 503 response", async () => {
+    const get = vi.fn().mockRejectedValue(new Error("timeout"));
+    const out = await apiGetJson({ get } as never, "x");
+
+    expect(out.res.status).toBe(503);
+    expect(out.raw).toEqual({
+      message: "Could not reach API (timeout)",
     });
   });
 

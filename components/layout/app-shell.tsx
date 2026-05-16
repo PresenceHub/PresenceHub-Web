@@ -2,21 +2,23 @@
 
 import type { ReactNode } from "react";
 
-import { AppSidebar } from "@/components/layout/sidebar";
+import { AppSidebar, type AppSidebarProps } from "@/components/layout/sidebar";
+import type { PlatformDto } from "@/lib/api/platforms-payload";
 import { Topbar } from "@/components/layout/topbar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { CreatePostPanel } from "./create-post-panel";
-import React from "react";
 
 type AppShellProps = {
   children: ReactNode;
+  sidebar: AppSidebarProps & {
+    platforms: PlatformDto[];
+  };
 };
 
-export function AppShell({ children }: AppShellProps) {
-  const [open, setOpen] = React.useState(false);
+export function AppShell({ children, sidebar }: AppShellProps) {
   return (
     <SidebarProvider>
-      <AppSidebar onCreatePost={() => setOpen(true)} />
+      <AppSidebar user={sidebar.user} platforms={sidebar.platforms} />
       <SidebarInset className="flex min-h-svh max-h-svh flex-col overflow-hidden">
         <Topbar />
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -25,7 +27,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </div>
       </SidebarInset>
-      <CreatePostPanel open={open} setOpen={setOpen} />
+      <CreatePostPanel />
     </SidebarProvider>
   );
 }

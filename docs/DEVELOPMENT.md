@@ -26,10 +26,10 @@ cp .env.example .env.local
 Default value:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost
+PH_API_URL=http://localhost/api
 ```
 
-If your API runs on a different host/port, update `NEXT_PUBLIC_API_URL` in `.env.local`.
+If your API runs on a different host/port, update `PH_API_URL` in `.env.local`.
 
 ## 3) Set up git hooks (recommended)
 
@@ -62,13 +62,13 @@ docker compose up --build
 By default, Docker Compose setup uses:
 
 ```env
-NEXT_PUBLIC_API_URL=http://host.docker.internal
+PH_API_URL=http://host.docker.internal:8000
 ```
 
-If your API is reachable at a different URL, set it when starting compose:
+To override Docker API URL without affecting non-Docker `.env` values, set `PH_API_URL_DOCKER` when starting compose:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://your-api-host docker compose up --build
+PH_API_URL_DOCKER=http://your-api-host:8000 docker compose up --build
 ```
 
 3. Stop the stack:
@@ -80,7 +80,7 @@ docker compose down
 ## Quick verification
 
 - App loads on `http://localhost:3000`
-- API calls target `NEXT_PUBLIC_API_URL`
+- API calls target `PH_API_URL`
 - Optional quality checks:
 
 ```bash

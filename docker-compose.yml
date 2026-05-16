@@ -18,6 +18,10 @@ services:
     # must run `next dev --webpack` or Next exits with a config mismatch error.
     command: sh -c "corepack enable && corepack prepare pnpm@10.33.2 --activate && pnpm install && pnpm run dev:docker"
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://host.docker.internal}
+      # Keep Docker API target independent from root `.env` (often host-only values
+      # like `https://presencehub.local` that are unreachable from containers).
+      # Default targets Laravel app server port directly to avoid TLS redirect/cert
+      # issues from the API nginx container.
+      PH_API_URL: ${PH_API_URL_DOCKER:-http://host.docker.internal:8000}
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"

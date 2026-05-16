@@ -7,9 +7,6 @@ describe("dashboardNav", () => {
     expect(dashboardNav.map((item) => item.href)).toEqual([
       "/dashboard",
       "/dashboard/queue",
-      "/dashboard/compose",
-      "/dashboard/analytics",
-      "/dashboard/accounts",
       "/dashboard/settings",
     ]);
   });

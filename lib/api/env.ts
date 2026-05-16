@@ -1,6 +1,6 @@
 /**
  * Base URL for PresenceHub API (origin only; paths like `/api/v1/...` are appended by callers).
- * Server: `API_URL` (e.g. Docker internal) or `NEXT_PUBLIC_API_URL`. Browser: `NEXT_PUBLIC_API_URL` only.
+ * Server and Browser: `PH_API_URL` only.
  */
 function normalizeApiBaseUrl(raw: string): string {
   let s = raw.trim().replace(/\/+$/, "");
@@ -10,13 +10,27 @@ function normalizeApiBaseUrl(raw: string): string {
   return s;
 }
 
+function browserReachableApiBaseUrl(base: string): string {
+  if (typeof window === "undefined") {
+    return base;
+  }
+
+  try {
+    const url = new URL(base);
+    if (url.hostname === "host.docker.internal") {
+      // Browser cannot always resolve Docker's host alias; use page hostname.
+      url.hostname = window.location.hostname || "localhost";
+      return url.toString().replace(/\/+$/, "");
+    }
+  } catch {
+    return base;
+  }
+
+  return base;
+}
+
 export function getApiBaseUrl(): string {
-  const raw =
-    typeof window === "undefined"
-      ? process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || ""
-      : process.env.NEXT_PUBLIC_API_URL || "";
-
-  const resolved = normalizeApiBaseUrl(raw);
-
-  return resolved;
+  const phApiUrl = process.env.PH_API_URL || "";
+  const normalized = normalizeApiBaseUrl(phApiUrl);
+  return browserReachableApiBaseUrl(normalized);
 }
