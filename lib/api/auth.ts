@@ -47,6 +47,27 @@ export type LogoutApiResult =
   | { ok: true }
   | { ok: false; status: number; message: string };
 
+export type PasswordResetPayload = {
+  token: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+};
+
+export type MessageApiSuccess = {
+  ok: true;
+  message: string;
+};
+
+export type MessageApiFailure = {
+  ok: false;
+  status: number;
+  message: string;
+  fieldErrors?: Record<string, string[]>;
+};
+
+export type MessageApiResult = MessageApiSuccess | MessageApiFailure;
+
 function getUserObjectFromResponse(
   data: unknown,
 ): Record<string, unknown> | null {
@@ -111,6 +132,47 @@ function extractCurrentWorkspaceUuid(data: unknown): string | null {
   const uuid = (cw as Record<string, unknown>).uuid;
   if (typeof uuid === "string" && uuid.trim() !== "") return uuid.trim();
   return null;
+}
+
+function extractMessage(data: unknown, fallback: string): string {
+  if (!data || typeof data !== "object") return fallback;
+  const message = (data as Record<string, unknown>).message;
+  return typeof message === "string" && message.trim() !== ""
+    ? message
+    : fallback;
+}
+
+async function postAuthMessageJson(
+  path: `api/v1/auth/${string}`,
+  body: Record<string, string>,
+  successFallback: string,
+  failureFallback: string,
+): Promise<MessageApiResult> {
+  const api = getPresenceHubApi();
+  if (!api) {
+    return {
+      ok: false,
+      status: 0,
+      message: API_URL_NOT_CONFIGURED_MESSAGE,
+    };
+  }
+
+  const { res, raw } = await apiPostJson(api, path, body);
+
+  if (!res.ok) {
+    const normalized = normalizedErrorFromResponse(res, raw, failureFallback);
+    return {
+      ok: false,
+      status: res.status,
+      message: normalized.message,
+      fieldErrors: normalized.fieldErrors,
+    };
+  }
+
+  return {
+    ok: true,
+    message: extractMessage(raw, successFallback),
+  };
 }
 
 async function postAuthJson(
@@ -192,6 +254,33 @@ export function registerRequest(
     password: payload.password,
     confirm_password: payload.confirm_password,
   });
+}
+
+export function forgotPasswordRequest(
+  email: string,
+): Promise<MessageApiResult> {
+  return postAuthMessageJson(
+    "api/v1/auth/forgot-password",
+    { email },
+    "If that email address is in our system, we have emailed a password reset link.",
+    "Could not send password reset link.",
+  );
+}
+
+export function resetPasswordRequest(
+  payload: PasswordResetPayload,
+): Promise<MessageApiResult> {
+  return postAuthMessageJson(
+    "api/v1/auth/reset-password",
+    {
+      token: payload.token,
+      email: payload.email,
+      password: payload.password,
+      password_confirmation: payload.password_confirmation,
+    },
+    "Your password has been reset.",
+    "Could not reset password.",
+  );
 }
 
 /**

@@ -4,9 +4,8 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { establishSessionCookiesAction } from "./session-actions";
-import type { AuthFormState } from "./actions";
-import { loginRequest } from "@/lib/api/auth";
+import type { AuthFormState } from "../login/actions";
+import { resetPasswordRequest } from "@/lib/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -18,11 +17,15 @@ function fieldError(
   return fieldErrors?.[key]?.[0];
 }
 
-type LoginFormProps = {
-  passwordResetSuccess?: boolean;
+type ResetPasswordFormProps = {
+  initialToken: string;
+  initialEmail: string;
 };
 
-export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
+export function ResetPasswordForm({
+  initialToken,
+  initialEmail,
+}: ResetPasswordFormProps) {
   const router = useRouter();
   const [state, setState] = useState<AuthFormState>({});
   const [pending, startTransition] = useTransition();
@@ -31,17 +34,31 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const token = String(fd.get("token") ?? "").trim();
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
+    const password_confirmation = String(
+      fd.get("password_confirmation") ?? "",
+    ).trim();
 
-    if (!email || !password) {
-      setState({ error: "Email and password are required." });
+    if (!token || !email || !password || !password_confirmation) {
+      setState({ error: "All fields are required." });
+      return;
+    }
+
+    if (password !== password_confirmation) {
+      setState({ error: "Password and confirmation do not match." });
       return;
     }
 
     startTransition(async () => {
       setState({});
-      const result = await loginRequest({ email, password });
+      const result = await resetPasswordRequest({
+        token,
+        email,
+        password,
+        password_confirmation,
+      });
       if (!result.ok) {
         setState({
           error: result.message,
@@ -50,15 +67,29 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
         return;
       }
 
-      await establishSessionCookiesAction({
-        token: result.token,
-        currentWorkspaceUuid: result.currentWorkspaceUuid,
-        emailFallback: email,
-        user: result.user,
-      });
-      router.push("/dashboard");
+      router.push("/login?reset=success");
       router.refresh();
     });
+  }
+
+  if (!initialToken || !initialEmail) {
+    return (
+      <div className="flex w-full max-w-sm flex-col gap-4 text-center">
+        <p
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+          role="alert"
+        >
+          This reset link is invalid or incomplete. Request a new link from the
+          forgot password page.
+        </p>
+        <Link
+          className="text-sm font-medium text-foreground underline underline-offset-4"
+          href="/forgot-password"
+        >
+          Forgot password
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -66,14 +97,6 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
       onSubmit={handleSubmit}
       className="flex w-full max-w-sm flex-col gap-4"
     >
-      {passwordResetSuccess ? (
-        <p
-          className="rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground"
-          role="status"
-        >
-          Your password has been reset. Sign in with your new password.
-        </p>
-      ) : null}
       {state.error ? (
         <p
           className="rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
@@ -82,6 +105,7 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
           {state.error}
         </p>
       ) : null}
+      <input type="hidden" name="token" value={initialToken} />
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium text-foreground">
           Email
@@ -91,7 +115,9 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
           name="email"
           type="email"
           autoComplete="email"
+          defaultValue={initialEmail}
           required
+          readOnly
           disabled={pending}
           className={cn(
             fieldError(state.fieldErrors, "email") && "aria-invalid",
@@ -105,25 +131,17 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
         ) : null}
       </div>
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-foreground"
-          >
-            Password
-          </label>
-          <Link
-            href="/forgot-password"
-            className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Forgot password?
-          </Link>
-        </div>
+        <label
+          htmlFor="password"
+          className="text-sm font-medium text-foreground"
+        >
+          New password
+        </label>
         <Input
           id="password"
           name="password"
           type="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
           required
           disabled={pending}
           className={cn(
@@ -137,16 +155,43 @@ export function LoginForm({ passwordResetSuccess = false }: LoginFormProps) {
           </p>
         ) : null}
       </div>
+      <div className="space-y-2">
+        <label
+          htmlFor="password_confirmation"
+          className="text-sm font-medium text-foreground"
+        >
+          Confirm new password
+        </label>
+        <Input
+          id="password_confirmation"
+          name="password_confirmation"
+          type="password"
+          autoComplete="new-password"
+          required
+          disabled={pending}
+          className={cn(
+            fieldError(state.fieldErrors, "password_confirmation") &&
+              "aria-invalid",
+          )}
+          aria-invalid={Boolean(
+            fieldError(state.fieldErrors, "password_confirmation"),
+          )}
+        />
+        {fieldError(state.fieldErrors, "password_confirmation") ? (
+          <p className="text-xs text-destructive">
+            {fieldError(state.fieldErrors, "password_confirmation")}
+          </p>
+        ) : null}
+      </div>
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Signing in…" : "Sign in"}
+        {pending ? "Resetting password…" : "Reset password"}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        No account?{" "}
         <Link
           className="font-medium text-foreground underline underline-offset-4"
-          href="/register"
+          href="/login"
         >
-          Register
+          Back to sign in
         </Link>
       </p>
     </form>

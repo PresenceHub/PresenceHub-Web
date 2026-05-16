@@ -20,7 +20,13 @@ vi.mock("@/lib/api/client", () => ({
   normalizedErrorFromResponse: normalizedErrorFromResponseMock,
 }));
 
-import { loginRequest, logoutRequest, registerRequest } from "@/lib/api/auth";
+import {
+  forgotPasswordRequest,
+  loginRequest,
+  logoutRequest,
+  registerRequest,
+  resetPasswordRequest,
+} from "@/lib/api/auth";
 
 describe("auth api module", () => {
   beforeEach(() => {
@@ -241,6 +247,101 @@ describe("auth api module", () => {
     getPresenceHubApiWithBearerMock.mockReturnValue(null);
 
     await expect(logoutRequest("t", "ws")).resolves.toMatchObject({
+      ok: false,
+      status: 0,
+    });
+  });
+
+  it("returns success for forgot password message response", async () => {
+    getPresenceHubApiMock.mockReturnValue({});
+    apiPostJsonMock.mockResolvedValue({
+      res: new Response(
+        JSON.stringify({
+          message:
+            "If that email address is in our system, we have emailed a password reset link.",
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      ),
+      raw: {
+        message:
+          "If that email address is in our system, we have emailed a password reset link.",
+      },
+    });
+
+    await expect(forgotPasswordRequest("a@b.com")).resolves.toEqual({
+      ok: true,
+      message:
+        "If that email address is in our system, we have emailed a password reset link.",
+    });
+  });
+
+  it("returns normalized failure for forgot password errors", async () => {
+    getPresenceHubApiMock.mockReturnValue({});
+    apiPostJsonMock.mockResolvedValue({
+      res: new Response(JSON.stringify({ message: "bad" }), {
+        status: 422,
+        headers: { "content-type": "application/json" },
+      }),
+      raw: { message: "bad" },
+    });
+    normalizedErrorFromResponseMock.mockReturnValue({
+      message: "Invalid email",
+      fieldErrors: { email: ["Invalid email"] },
+    });
+
+    await expect(forgotPasswordRequest("bad")).resolves.toEqual({
+      ok: false,
+      status: 422,
+      message: "Invalid email",
+      fieldErrors: { email: ["Invalid email"] },
+    });
+  });
+
+  it("returns success for reset password message response", async () => {
+    getPresenceHubApiMock.mockReturnValue({});
+    apiPostJsonMock.mockResolvedValue({
+      res: new Response(
+        JSON.stringify({ message: "Your password has been reset." }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      ),
+      raw: { message: "Your password has been reset." },
+    });
+
+    await expect(
+      resetPasswordRequest({
+        token: "token-1",
+        email: "a@b.com",
+        password: "new-password1234",
+        password_confirmation: "new-password1234",
+      }),
+    ).resolves.toEqual({
+      ok: true,
+      message: "Your password has been reset.",
+    });
+  });
+
+  it("returns config error when api client is missing for password reset", async () => {
+    getPresenceHubApiMock.mockReturnValue(null);
+
+    await expect(forgotPasswordRequest("a@b.com")).resolves.toMatchObject({
+      ok: false,
+      status: 0,
+    });
+
+    await expect(
+      resetPasswordRequest({
+        token: "token-1",
+        email: "a@b.com",
+        password: "new-password1234",
+        password_confirmation: "new-password1234",
+      }),
+    ).resolves.toMatchObject({
       ok: false,
       status: 0,
     });
